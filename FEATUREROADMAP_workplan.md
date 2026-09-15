@@ -17,7 +17,7 @@ Terms like *Durable Object*, *WebSocket*, *perft*, *minimax* are defined in [Pro
 
 Nothing else in this project may be started until Phase 0 is fully checked off.
 
-- [ ] **0.1 — Project scaffold**
+- [x] **0.1 — Project scaffold**
   - Depends on: —
   - Files: `package.json`, `wrangler.jsonc`, `src/` and `tests/` folders
   - Definition of done: `npm install` runs with no errors; `wrangler.jsonc` exists with `compatibility_date` set to today and `observability` enabled (no `assets` or Durable Object config yet — that's added in the phases that need them); project structure matches the layout in [README.md](README.md#project-structure-planned).
@@ -43,7 +43,7 @@ Nothing else in this project may be started until Phase 0 is fully checked off.
 
 Goal: the smallest complete, fully-playable game, reachable at a public URL.
 
-- [ ] **1.1 — Static site deploy pipeline**
+- [x] **1.1 — Static site deploy pipeline**
   - Depends on: 0.1
   - Files: `wrangler.jsonc` (add `assets` config, `not_found_handling: "single-page-application"`), `public/index.html` (placeholder), `src/worker.js` (minimal request handler)
   - Definition of done: `npm run deploy` publishes successfully; the resulting `*.workers.dev` URL loads the placeholder page in a browser.

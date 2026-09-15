@@ -22,7 +22,7 @@ Nothing else in this project may be started until Phase 0 is fully checked off.
   - Files: `package.json`, `wrangler.jsonc`, `src/` and `tests/` folders
   - Definition of done: `npm install` runs with no errors; `wrangler.jsonc` exists with `compatibility_date` set to today and `observability` enabled (no `assets` or Durable Object config yet — that's added in the phases that need them); project structure matches the layout in [README.md](README.md#project-structure-planned).
 
-- [ ] **0.2 — Core move generation, verified by perft**
+- [x] **0.2 — Core move generation, verified by perft**
   - Depends on: 0.1
   - Files: `src/rules.js`, `tests/perft.test.js`
   - Definition of done: `rules.js` represents the board and generates legal moves for all six piece types (including sliding pieces — bishop, rook, queen — respecting blockers, and correctly *excluding* moves that would leave your own king in check). Running `node tests/perft.test.js` from the start position prints:

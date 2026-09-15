@@ -40,15 +40,22 @@ npm run deploy       # publish the current code to your live Cloudflare Workers 
 ```
 gambit room/
 ├── src/
-│   ├── worker.js     # the entry point Cloudflare runs — routes requests
-│   ├── room.js        # the "Durable Object" that runs one online game room
-│   ├── rules.js       # the chess rulebook — shared by every mode, written from scratch
-│   └── ai.js           # the computer opponent's move-picking logic
-├── public/             # the actual web page: HTML, CSS, images, sounds
-├── tests/               # automated checks, including the move-count test for rules.js
-├── wrangler.jsonc      # Cloudflare Workers configuration
+│   ├── worker.js       # the entry point Cloudflare runs — routes requests
+│   └── room.js          # the "Durable Object" that runs one online game room
+├── public/               # everything served straight to the browser
+│   ├── rules.js            # the chess rulebook — shared by every mode AND the server
+│   ├── board.js             # board rendering, click handling, move execution
+│   ├── hotseat.js            # hot-seat's turn flow (the 180° board flip)
+│   ├── sounds.js               # move/capture/check tones (synthesized, no audio files)
+│   ├── app.js                   # mode selection wiring
+│   ├── index.html
+│   └── styles.css
+├── tests/                 # automated checks, including the move-count test for rules.js
+├── wrangler.jsonc        # Cloudflare Workers configuration
 └── package.json
 ```
+
+`rules.js` lives inside `public/` — not `src/` — specifically so the browser can fetch it directly as a plain file, while the server-side code (`src/worker.js`, and later `src/room.js`) still imports that exact same file for the Online mode. One authored file, actually shared, not two copies kept in sync.
 
 ## Tech stack, in plain English
 

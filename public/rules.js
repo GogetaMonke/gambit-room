@@ -49,6 +49,12 @@ export function createInitialState() {
   return {
     board: START_BOARD.slice(),
     turn: 'w',
+    // Which castling moves are still legally available (rights, not
+    // necessarily currently possible — squares might be blocked/attacked).
+    castling: { wK: true, wQ: true, bK: true, bQ: true },
+    // The square a pawn can capture *to* via en passant right now, or null.
+    // Only ever set for the one move immediately after a double pawn push.
+    epSquare: null,
   };
 }
 
@@ -114,21 +120,31 @@ function slidingMoves(board, from, dirs) {
   return moves;
 }
 
-function pawnMoves(board, from, color) {
+const PROMOTION_PIECES = ['Q', 'R', 'B', 'N'];
+
+function pawnMoves(board, from, color, epSquare) {
   const moves = [];
   const f = FILE(from);
   const r = RANK(from);
   const dir = color === 'w' ? 1 : -1;
   const startRank = color === 'w' ? 1 : 6;
+  const promotionRank = color === 'w' ? 7 : 0;
   const oneRank = r + dir;
-  if (oneRank < 0 || oneRank > 7) return moves; // pawn on last rank: promotion arrives in 0.3
+  if (oneRank < 0 || oneRank > 7) return moves;
+
+  const pushMove = (to, extra) => {
+    if (oneRank === promotionRank) {
+      for (const promotion of PROMOTION_PIECES) moves.push({ from, to, promotion, ...extra });
+    } else {
+      moves.push({ from, to, ...extra });
+    }
+  };
 
   const oneTo = SQUARE(f, oneRank);
   if (!board[oneTo]) {
-    moves.push({ from, to: oneTo });
+    pushMove(oneTo);
     if (r === startRank) {
-      const twoRank = r + dir * 2;
-      const twoTo = SQUARE(f, twoRank);
+      const twoTo = SQUARE(f, r + dir * 2);
       if (!board[twoTo]) moves.push({ from, to: twoTo, doublePush: true });
     }
   }
@@ -139,10 +155,46 @@ function pawnMoves(board, from, color) {
     const capTo = SQUARE(cf, oneRank);
     const target = board[capTo];
     if (target && pieceColor(target) !== color) {
-      moves.push({ from, to: capTo, capture: true });
+      pushMove(capTo, { capture: true });
+    } else if (capTo === epSquare) {
+      moves.push({ from, to: capTo, capture: true, enPassant: true, captureSquare: SQUARE(cf, r) });
     }
   }
 
+  return moves;
+}
+
+// Castling moves for the king on `from`, if the state's remaining rights
+// and the current board allow it: king and rook unmoved (tracked via
+// state.castling), nothing between them, and the king is not currently in
+// check, does not pass through an attacked square, and does not land on one.
+function castlingMoves(state, from) {
+  const { board, turn, castling } = state;
+  const rank = turn === 'w' ? 0 : 7;
+  if (from !== SQUARE(4, rank)) return [];
+  const opponent = opponentOf(turn);
+  if (isSquareAttacked(board, from, opponent)) return [];
+
+  const moves = [];
+  const kingRight = turn === 'w' ? castling.wK : castling.bK;
+  if (kingRight) {
+    const f1 = SQUARE(5, rank);
+    const g1 = SQUARE(6, rank);
+    if (!board[f1] && !board[g1]
+      && !isSquareAttacked(board, f1, opponent) && !isSquareAttacked(board, g1, opponent)) {
+      moves.push({ from, to: g1, castle: 'K' });
+    }
+  }
+  const queenRight = turn === 'w' ? castling.wQ : castling.bQ;
+  if (queenRight) {
+    const d1 = SQUARE(3, rank);
+    const c1 = SQUARE(2, rank);
+    const b1 = SQUARE(1, rank);
+    if (!board[d1] && !board[c1] && !board[b1]
+      && !isSquareAttacked(board, d1, opponent) && !isSquareAttacked(board, c1, opponent)) {
+      moves.push({ from, to: c1, castle: 'Q' });
+    }
+  }
   return moves;
 }
 
@@ -154,7 +206,7 @@ function generatePseudoMoves(state) {
     if (!piece || pieceColor(piece) !== turn) continue;
     switch (piece.toUpperCase()) {
       case 'P':
-        moves.push(...pawnMoves(board, sq, turn));
+        moves.push(...pawnMoves(board, sq, turn, state.epSquare));
         break;
       case 'N':
         for (const to of stepTargets(sq, KNIGHT_STEPS)) moveIfLandable(board, sq, to, moves);
@@ -170,6 +222,7 @@ function generatePseudoMoves(state) {
         break;
       case 'K':
         for (const to of stepTargets(sq, KING_STEPS)) moveIfLandable(board, sq, to, moves);
+        moves.push(...castlingMoves(state, sq));
         break;
       default:
         break;
@@ -238,9 +291,44 @@ function findKing(board, color) {
 
 function applyMoveToBoard(board, move) {
   const newBoard = board.slice();
-  newBoard[move.to] = newBoard[move.from];
+  const piece = newBoard[move.from];
+  newBoard[move.to] = move.promotion
+    ? (pieceColor(piece) === 'w' ? move.promotion : move.promotion.toLowerCase())
+    : piece;
   newBoard[move.from] = null;
+
+  if (move.enPassant) {
+    newBoard[move.captureSquare] = null;
+  }
+
+  if (move.castle) {
+    const rank = RANK(move.from);
+    const [rookFrom, rookTo] = move.castle === 'K'
+      ? [SQUARE(7, rank), SQUARE(5, rank)]
+      : [SQUARE(0, rank), SQUARE(3, rank)];
+    newBoard[rookTo] = newBoard[rookFrom];
+    newBoard[rookFrom] = null;
+  }
+
   return newBoard;
+}
+
+const CASTLE_CLEARING_SQUARES = {
+  [SQUARE(4, 0)]: ['wK', 'wQ'], // e1: white king moves or is (impossibly) captured
+  [SQUARE(0, 0)]: ['wQ'], // a1 rook
+  [SQUARE(7, 0)]: ['wK'], // h1 rook
+  [SQUARE(4, 7)]: ['bK', 'bQ'], // e8: black king
+  [SQUARE(0, 7)]: ['bQ'], // a8 rook
+  [SQUARE(7, 7)]: ['bK'], // h8 rook
+};
+
+function updateCastlingRights(castling, move) {
+  const next = { ...castling };
+  for (const square of [move.from, move.to]) {
+    const rights = CASTLE_CLEARING_SQUARES[square];
+    if (rights) for (const right of rights) next[right] = false;
+  }
+  return next;
 }
 
 export function isInCheck(state, color = state.turn) {
@@ -265,8 +353,23 @@ export function generateLegalMoves(state) {
 }
 
 export function makeMove(state, move) {
+  let epSquare = null;
+  if (move.doublePush) {
+    const midRank = (RANK(move.from) + RANK(move.to)) / 2;
+    epSquare = SQUARE(FILE(move.from), midRank);
+  }
   return {
     board: applyMoveToBoard(state.board, move),
     turn: opponentOf(state.turn),
+    castling: updateCastlingRights(state.castling, move),
+    epSquare,
   };
+}
+
+export function isCheckmate(state) {
+  return isInCheck(state) && generateLegalMoves(state).length === 0;
+}
+
+export function isStalemate(state) {
+  return !isInCheck(state) && generateLegalMoves(state).length === 0;
 }

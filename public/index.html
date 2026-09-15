@@ -4,42 +4,46 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gambit Room</title>
-  <style>
-    :root {
-      --walnut: #6b4a34;
-      --cream: #f3ead9;
-      --forest: #2f5233;
-      --ink: #2b241d;
-    }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--cream);
-      color: var(--ink);
-      font-family: Georgia, "Times New Roman", serif;
-      text-align: center;
-      padding: 24px;
-      box-sizing: border-box;
-    }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.25em;
-      color: var(--walnut);
-    }
-    p {
-      font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
-      color: var(--forest);
-      font-size: 1.1rem;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div>
-    <h1>Gambit Room</h1>
-    <p>The board is being built. Check back soon.</p>
-  </div>
+  <h1>Gambit Room</h1>
+  <p class="tagline">A calm corner for a serious game.</p>
+
+  <section id="mode-select">
+    <button class="mode-btn" id="mode-hotseat" type="button">
+      Hot-Seat
+      <span class="hint">Two people, one screen, taking turns</span>
+    </button>
+    <button class="mode-btn" id="mode-computer" type="button" disabled title="Coming soon">
+      VS Computer
+      <span class="hint">Coming soon</span>
+    </button>
+    <button class="mode-btn" id="mode-online" type="button" disabled title="Coming soon">
+      Online
+      <span class="hint">Coming soon</span>
+    </button>
+  </section>
+
+  <section id="game-screen" hidden>
+    <div id="status-bar"></div>
+    <div id="board-wrapper">
+      <div class="board" id="board"></div>
+      <div id="end-overlay">
+        <div class="overlay-card" id="end-message"></div>
+      </div>
+      <div id="promotion-picker">
+        <div class="overlay-card">
+          <div class="promo-choices" id="promo-choices"></div>
+        </div>
+      </div>
+    </div>
+    <div id="controls">
+      <button class="control-btn" id="new-game-btn" type="button">New Game</button>
+      <button class="control-btn" id="back-btn" type="button">Back to Menu</button>
+    </div>
+  </section>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>

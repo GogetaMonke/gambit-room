@@ -9,7 +9,7 @@
 //
 // Run with: node tests/perft.test.js
 
-import { createInitialState, generateLegalMoves, makeMove } from '../src/rules.js';
+import { createInitialState, generateLegalMoves, makeMove } from '../public/rules.js';
 
 function perft(state, depth) {
   if (depth === 0) return 1;

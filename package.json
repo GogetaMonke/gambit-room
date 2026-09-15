@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "node tests/perft.test.js"
+    "test": "node tests/perft.test.js && node tests/rules.test.js"
   },
   "devDependencies": {
     "wrangler": "^4.132.0"

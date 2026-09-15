@@ -32,7 +32,7 @@ Nothing else in this project may be started until Phase 0 is fully checked off.
 
     All three must match exactly. No other task in this project may begin until this passes.
 
-- [ ] **0.3 — Special rules: castling, en passant, promotion, check/checkmate/stalemate**
+- [x] **0.3 — Special rules: castling, en passant, promotion, check/checkmate/stalemate**
   - Depends on: 0.2
   - Files: `src/rules.js`, `tests/rules.test.js` (scenario-based positions, since these rules mostly don't appear within perft depth 3)
   - Definition of done: given hand-picked test positions, `rules.js` correctly allows/forbids castling (kingside, queenside, and each of their individual legality conditions — rook/king unmoved, no pieces between, king not moving through check), allows en passant only on the immediate next move after a qualifying two-square pawn advance, offers all four promotion piece choices when a pawn reaches the last rank, and correctly reports check, checkmate, and stalemate for known test positions. `rules.js` also exposes a reusable "is this square attacked by the opponent" function — needed again later for Phase 4.

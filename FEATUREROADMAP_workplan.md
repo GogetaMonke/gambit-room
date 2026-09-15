@@ -48,37 +48,37 @@ Goal: the smallest complete, fully-playable game, reachable at a public URL.
   - Files: `wrangler.jsonc` (add `assets` config, `not_found_handling: "single-page-application"`), `public/index.html` (placeholder), `src/worker.js` (minimal request handler)
   - Definition of done: `npm run deploy` publishes successfully; the resulting `*.workers.dev` URL loads the placeholder page in a browser.
 
-- [ ] **1.2 — Board and piece rendering**
+- [x] **1.2 — Board and piece rendering**
   - Depends on: 0.2, 1.1
   - Files: `public/index.html`, `public/styles.css`, `public/board.js`
   - Definition of done: loading the page shows a full 8×8 board in the walnut/cream palette with all 32 pieces in their correct starting squares, using the serif/sans-serif type pairing from the spec. No interactivity yet — this task is purely visual.
 
-- [ ] **1.3 — Move input and legal-move highlighting**
+- [x] **1.3 — Move input and legal-move highlighting**
   - Depends on: 0.2, 1.2
   - Files: `public/board.js`
   - Definition of done: clicking a piece gives its square the green glow and shows a dot on every legal destination square (a filled ring on capture squares), using `rules.js` as the only source of truth for what's legal. Clicking a square that isn't a legal destination does nothing — it is not possible to make an illegal move through the interface.
 
-- [ ] **1.4 — Full move execution and special rules in the UI**
+- [x] **1.4 — Full move execution and special rules in the UI**
   - Depends on: 0.3, 1.3
   - Files: `public/board.js`
   - Definition of done: castling, en passant, and promotion (with a piece-choice prompt) all work by clicking through the board exactly like any other move. Check is visually/audibly indicated (see 1.6). Checkmate and stalemate end the game: on checkmate the losing king's square glows red and a result message fades in (no `alert()`); on stalemate a similar non-blocking message appears.
 
-- [ ] **1.5 — Hot-seat turn flow**
+- [x] **1.5 — Hot-seat turn flow**
   - Depends on: 1.4
   - Files: `public/board.js`, `public/hotseat.js`
   - Definition of done: after each move, the board visually rotates 180 degrees so the next player sees it from their own side; the from/to squares of the last move stay highlighted until the following move; two people can play a complete legal game, start to finish, on one device.
 
-- [ ] **1.6 — Sound effects**
+- [x] **1.6 — Sound effects**
   - Depends on: 1.4
-  - Files: `public/sounds/` (click, thud, check audio files), `public/board.js`
-  - Definition of done: a quiet click plays on a normal move, a heavier thud plays on a capture, and a distinct short tone plays the instant either king is put in check.
+  - Files: `public/sounds.js`, `public/board.js`
+  - Definition of done: a quiet click plays on a normal move, a heavier thud plays on a capture, and a distinct short tone plays the instant either king is put in check. (Built as synthesized Web Audio tones rather than audio files — no binary assets to manage, still plain JS.)
 
-- [ ] **1.7 — Mode selection screen**
+- [x] **1.7 — Mode selection screen**
   - Depends on: 1.5
   - Files: `public/index.html`, `public/app.js`
   - Definition of done: landing on the site shows a choice of the three modes; selecting Hot-Seat goes straight into a playable game. (VS Computer and Online options can be visibly present but non-functional until Phases 2 and 3 are done.)
 
-- [ ] **1.8 — Deploy and confirm Hot-Seat is live**
+- [x] **1.8 — Deploy and confirm Hot-Seat is live**
   - Depends on: 1.6, 1.7
   - Files: none (verification task)
   - Definition of done: `npm run deploy` succeeds; a complete hot-seat game (including at least one castle, one promotion, and a checkmate) is played start-to-finish on the public URL with no console errors.

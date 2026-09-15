@@ -14,7 +14,7 @@ import {
   isInCheck,
   isCheckmate,
   isStalemate,
-} from '../src/rules.js';
+} from '../public/rules.js';
 
 let failures = 0;
 
